@@ -85,4 +85,60 @@ class APICaller {
         
         task.resume()
     }
+    
+    
+    func getDiscoverMovies(completion: @escaping (Result<[MovieTitle], Error>) -> Void) {
+        guard let url = URL(string: "\(Constants.baseURL)/v2.1/films/search-by-keyword?keyword=avatar&page=1")else{return}
+        
+        var request = URLRequest(url: url)
+        request.setValue(Constants.API_KEY, forHTTPHeaderField: "X-API-KEY")
+        
+        
+        
+        let task = URLSession.shared.dataTask(with: request) { data, _, error in
+            guard let data = data, error == nil else {
+                return
+            }
+            
+            do {
+                let results = try JSONDecoder().decode(MoviesTitleResponse.self, from: data)
+//                let res = try JSONSerialization.jsonObject(with: data, options: .fragmentsAllowed)
+//                print(res)
+                completion(.success(results.films))
+            } catch {
+                print("ERR")
+                completion(.failure(APIError.failedToGetData))
+            }
+        }
+        
+        task.resume()
+    }
+    
+    func search (with query: String, completion: @escaping (Result<[MovieTitle], Error>) -> Void) {
+        guard let query = query.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) else {return}
+        guard let url = URL(string: "\(Constants.baseURL)/v2.1/films/search-by-keyword?keyword=\(query)&page=1")else{return}
+        
+        var request = URLRequest(url: url)
+        request.setValue(Constants.API_KEY, forHTTPHeaderField: "X-API-KEY")
+        
+        
+        
+        let task = URLSession.shared.dataTask(with: request) { data, _, error in
+            guard let data = data, error == nil else {
+                return
+            }
+            
+            do {
+                let results = try JSONDecoder().decode(MoviesTitleResponse.self, from: data)
+                let res = try JSONSerialization.jsonObject(with: data, options: .fragmentsAllowed)
+                print(res)
+                completion(.success(results.films))
+            } catch {
+                print("ERR")
+                completion(.failure(APIError.failedToGetData))
+            }
+        }
+        
+        task.resume()
+    }
 }
